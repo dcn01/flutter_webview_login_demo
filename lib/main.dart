@@ -114,9 +114,9 @@ class _WebViewPageState extends State<WebViewPage> {
   bool _isWindowDisplayed = false;
 
   Future<bool> _onCreateWindow(InAppWebViewController controller, CreateWindowRequest createWindowRequest) async {
-    if (!createWindowRequest.url.contains('google') && !createWindowRequest.url.contains('facebook')) {
-      controller.loadUrl(url: createWindowRequest.url);
-      return false;
+    bool isLoginRequest = false;
+    if (createWindowRequest.url.contains('google') || createWindowRequest.url.contains('facebook')) {
+      isLoginRequest = true;
     }
 
     _isWindowDisplayed = true;
@@ -126,8 +126,8 @@ class _WebViewPageState extends State<WebViewPage> {
       builder: (context) {
         return AlertDialog(
           content: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
+            width: isLoginRequest ? MediaQuery.of(context).size.width : 1,
+            height: isLoginRequest ? MediaQuery.of(context).size.height : 1,
             child: InAppWebView(
               // Setting the windowId property is important here!
               windowId: createWindowRequest.windowId,
@@ -142,9 +142,21 @@ class _WebViewPageState extends State<WebViewPage> {
                     debuggingEnabled: true,
                     horizontalScrollBarEnabled: false,
                     verticalScrollBarEnabled: false,
+                    useShouldOverrideUrlLoading: true,
                     userAgent: "Mozilla/5.0 (Linux; Android 9; LG-H870 Build/PKQ1.190522.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.106 Mobile Safari/537.36"
                 ),
               ),
+              shouldOverrideUrlLoading: (internalController, shouldOverrideRequest) async {
+                // handle scenarios that in android it will return image as initial url
+                if (!isLoginRequest) {
+                  controller.loadUrl(url: shouldOverrideRequest.url);
+                  Navigator.pop(context);
+                  return ShouldOverrideUrlLoadingAction.CANCEL;
+                } else {
+                  return ShouldOverrideUrlLoadingAction.ALLOW;
+                }
+              },
+
               onCloseWindow: (controller) {
                 // On Facebook Login, this event is called twice,
                 // so here we check if we already popped the alert dialog context
