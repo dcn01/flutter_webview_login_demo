@@ -110,11 +110,6 @@ class _WebViewPageState extends State<WebViewPage> {
   bool _isWindowDisplayed = false;
 
   Future<bool> _onCreateWindow(InAppWebViewController controller, CreateWindowRequest createWindowRequest) async {
-    if (!createWindowRequest.url.contains('google') && !createWindowRequest.url.contains('facebook')) {
-      controller.loadUrl(url: createWindowRequest.url);
-      return true;
-    }
-
     _isWindowDisplayed = true;
     showDialog<AlertDialog>(
       context: context,
