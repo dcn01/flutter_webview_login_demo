@@ -94,11 +94,7 @@ class _WebViewPageState extends State<WebViewPage> {
                   supportMultipleWindows: true
               ),
               crossPlatform: InAppWebViewOptions(
-                verticalScrollBarEnabled: true,
-                clearCache: true,
                 disableContextMenu: false,
-                cacheEnabled: true,
-                javaScriptEnabled: true,
                 javaScriptCanOpenWindowsAutomatically: true,
                 debuggingEnabled: true,
                 transparentBackground: true,
@@ -114,20 +110,21 @@ class _WebViewPageState extends State<WebViewPage> {
   bool _isWindowDisplayed = false;
 
   Future<bool> _onCreateWindow(InAppWebViewController controller, CreateWindowRequest createWindowRequest) async {
-    bool isLoginRequest = false;
-    if (createWindowRequest.url.contains('google') || createWindowRequest.url.contains('facebook')) {
-      isLoginRequest = true;
+    if (!createWindowRequest.url.contains('google') && !createWindowRequest.url.contains('facebook')) {
+      controller.loadUrl(url: createWindowRequest.url);
+      return true;
     }
 
     _isWindowDisplayed = true;
-
-    showDialog(
+    showDialog<AlertDialog>(
       context: context,
       builder: (context) {
         return AlertDialog(
+          contentPadding: EdgeInsets.all(2.0),
+          insetPadding: EdgeInsets.all(20.0),
           content: Container(
-            width: isLoginRequest ? MediaQuery.of(context).size.width : 1,
-            height: isLoginRequest ? MediaQuery.of(context).size.height : 1,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
             child: InAppWebView(
               // Setting the windowId property is important here!
               windowId: createWindowRequest.windowId,
@@ -137,26 +134,9 @@ class _WebViewPageState extends State<WebViewPage> {
                   thirdPartyCookiesEnabled: true,
                 ),
                 crossPlatform: InAppWebViewOptions(
-                    cacheEnabled: true,
-                    javaScriptEnabled: true,
-                    debuggingEnabled: true,
-                    horizontalScrollBarEnabled: false,
-                    verticalScrollBarEnabled: false,
-                    useShouldOverrideUrlLoading: true,
                     userAgent: "Mozilla/5.0 (Linux; Android 9; LG-H870 Build/PKQ1.190522.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.106 Mobile Safari/537.36"
                 ),
               ),
-              shouldOverrideUrlLoading: (internalController, shouldOverrideRequest) async {
-                // handle scenarios that in android it will return image as initial url
-                if (!isLoginRequest) {
-                  controller.loadUrl(url: shouldOverrideRequest.url);
-                  Navigator.pop(context);
-                  return ShouldOverrideUrlLoadingAction.CANCEL;
-                } else {
-                  return ShouldOverrideUrlLoadingAction.ALLOW;
-                }
-              },
-
               onCloseWindow: (controller) {
                 // On Facebook Login, this event is called twice,
                 // so here we check if we already popped the alert dialog context
@@ -170,7 +150,6 @@ class _WebViewPageState extends State<WebViewPage> {
         );
       },
     );
-
     return true;
   }
 }
