@@ -2,6 +2,10 @@
 
 A Flutter app to demonstrate how to login by Google and Facebook in WebView.
 
-## Getting Started
+## Tutorial
 
+
+## Demo
+
+![](images/flutter-webview-login-demo.gif)
 
